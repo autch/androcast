@@ -28,10 +28,11 @@ import com.android.ddmlib.Device;
 
 public class AndrocastFrame extends JFrame implements ItemListener {
 
-	private static final String[] zoomLabels = { "50%", "75%", "100%", "150%", "200%" };
+	private static final String[] zoomLabels = { "50%", "75%", "100%", "150%",
+			"200%" };
 	private static final double[] zoomValues = { 0.5, 0.75, 1.0, 1.50, 2.0 };
 	private static final int zoomDefault = 2;
-	
+
 	private final Androcast application;
 	private JToolBar tbPanel;
 	private JPanel screenPanel;
@@ -41,36 +42,36 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 	private JCheckBox landscapeCheck;
 	private AndrocastMonitor worker;
 	private BufferedImage lastImage;
-	
+
 	public AndrocastFrame(String arg0, Androcast app) throws HeadlessException {
 		super(arg0);
 		application = app;
 		lastImage = null;
 		initComponents();
 	}
-	
+
 	private void initComponents() {
 		tbPanel = new JToolBar();
 		tbPanel.setFloatable(false);
 		tbPanel.add(new JLabel("Device: "));
 		devCombo = new JComboBox();
-		for(Device d: application.getDevices()) {
+		for (Device d : application.getDevices()) {
 			devCombo.addItem(getDeviceCaption(d));
 		}
 		tbPanel.add(devCombo);
 		tbPanel.addSeparator();
-		
+
 		startButton = new JToggleButton("Start");
 		startButton.addItemListener(this);
 		tbPanel.add(startButton);
 		tbPanel.addSeparator();
-		
+
 		captureButton = new JButton("Capture");
 		captureButton.setEnabled(false);
 		captureButton.addActionListener(new CaptureAction());
 		tbPanel.add(captureButton);
 		tbPanel.addSeparator();
-		
+
 		landscapeCheck = new JCheckBox("Landscape", false);
 		landscapeCheck.addItemListener(this);
 		tbPanel.add(landscapeCheck);
@@ -81,15 +82,15 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 		zoomCombo.setSelectedIndex(zoomDefault);
 		zoomCombo.addItemListener(this);
 		tbPanel.add(zoomCombo);
-		
+
 		add(tbPanel, BorderLayout.PAGE_START);
-		
+
 		screenPanel = new CapturePanel();
 		add(screenPanel, BorderLayout.CENTER);
 
 		setSize(400, 600);
-		
-		//pack();
+
+		// pack();
 	}
 
 	public static String getDeviceCaption(Device dev) {
@@ -98,43 +99,52 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 	}
 
 	class CaptureAction extends AbstractAction {
-		public void actionPerformed(ActionEvent e){
-			if(worker == null) throw new NullPointerException("Worker thread is not running");
+		public void actionPerformed(ActionEvent e) {
+			if (worker == null)
+				throw new NullPointerException("Worker thread is not running");
 			BufferedImage image = worker.getImage();
 			JFileChooser fc = new JFileChooser();
-			if(fc.showSaveDialog(AndrocastFrame.this) == JFileChooser.APPROVE_OPTION){
-				try{
+			if (fc.showSaveDialog(AndrocastFrame.this) == JFileChooser.APPROVE_OPTION) {
+				try {
 					ImageIO.write(image, "png", fc.getSelectedFile());
-				} catch(Exception ex) {
-					JOptionPane.showMessageDialog(AndrocastFrame.this, 
-							MessageFormat.format("Unable to save a capture: {0}\n{1}",
-												 fc.getSelectedFile(), ex.getMessage()),
-							"Error saving capture", JOptionPane.ERROR_MESSAGE);
+				} catch (Exception ex) {
+					JOptionPane
+							.showMessageDialog(
+									AndrocastFrame.this,
+									MessageFormat
+											.format(
+													"Unable to save a capture: {0}\n{1}",
+													fc.getSelectedFile(), ex
+															.getMessage()),
+									"Error saving capture",
+									JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		}
 	}
-	
+
 	public void itemStateChanged(ItemEvent e) {
 		Object source = e.getItemSelectable();
-		if(source == landscapeCheck){
-			if(worker != null) {
+		if (source == landscapeCheck) {
+			if (worker != null) {
 				worker.setLandscape(e.getStateChange() == ItemEvent.SELECTED);
 			}
 		}
-		if(source == zoomCombo) {
-			if(worker != null) {
+		if (source == zoomCombo) {
+			if (worker != null) {
 				worker.setZoom(zoomValues[zoomCombo.getSelectedIndex()]);
 			}
 		}
-		if(source == startButton) {
-			switch(e.getStateChange()) {
+		if (source == startButton) {
+			switch (e.getStateChange()) {
 			case ItemEvent.SELECTED:
 				Device[] devices = application.getDevices();
-				for(Device d : devices){
-					if(devCombo.getSelectedItem().equals(getDeviceCaption(d))) {
+				for (Device d : devices) {
+					if (devCombo.getSelectedItem().equals(getDeviceCaption(d))) {
 						worker = new AndrocastMonitor(screenPanel, d);
-						worker.setZoom(zoomValues[zoomCombo.getSelectedIndex()]);
+						worker
+								.setZoom(zoomValues[zoomCombo
+										.getSelectedIndex()]);
 						worker.setLandscape(landscapeCheck.isSelected());
 						worker.execute();
 						break;
@@ -160,16 +170,17 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 			setSize(320, 240);
 			setOpaque(true);
 		}
-		
+
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
-			if(worker != null) {
+			if (worker != null) {
 				worker.render(g);
 			} else {
-				// TODO add offscreen bitmap and render it when worker is not running
+				// TODO add offscreen bitmap and render it when worker is not
+				// running
 			}
 		}
-		
+
 	}
 }
