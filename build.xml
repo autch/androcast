@@ -2,28 +2,13 @@
 <project name="Androcast" default="jar" basedir=".">
 	<property name="src" location="src" />
 	<property name="bin" location="bin" />
-	<property name="dist" location="dist" />
 	<property name="name" value="androcast"/>
 	<property name="main.class" value="net.autch.androcast.Androcast" />
 	<property name="runtime.classpath" value=". ddmlib.jar" />
 
-	<target name="build" description="ソースをコンパイルする">
-		<!-- ${src}から${bin}に、Javaコードをコンパイルする -->
-		<mkdir dir="${bin}" />
-		<javac srcdir="${src}" destdir="${bin}" />
-	</target>
-
-	<target name="clean" description="クリーンアップ">
-		<!-- ${bin}と${dist}ディレクトリツリーを削除する -->
-
-		<delete dir="${bin}" />
-		<delete dir="${dist}" />
-	</target>
-
-	<target name="jar" depends="build">
-		<echo message="Creating the jar file ${bin}/${name}.jar" />
-		<mkdir dir="${dist}" />
-		<jar jarfile="${dist}/${name}.jar" basedir="${bin}">
+	<target name="jar">
+		<echo message="Creating the jar file ${name}.jar" />
+		<jar jarfile="${name}.jar" basedir="${bin}">
 			<manifest>
 				<attribute name="Main-Class" value="${main.class}" />
 				<attribute name="Class-Path" value="${runtime.classpath}" />
