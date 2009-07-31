@@ -29,7 +29,6 @@ import com.android.ddmlib.RawImage;
 
 public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	private final Component component;
-	private Graphics canvas;
 	private final Device device;
 	private boolean landscape;
 	private boolean resize;
@@ -44,7 +43,6 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 
 		device = dev;
 		component = cmp;
-		canvas = component.getGraphics();
 		landscape = false;
 		resize = true;
 		zoom = 1.0;
@@ -76,7 +74,6 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 						image = new BufferedImage(raw_width, raw_height,
 								BufferedImage.TYPE_INT_ARGB);
 						component.setSize(img_width, img_height);
-						canvas = component.getGraphics();
 						resize = false;
 					}
 					if (landscape) {
