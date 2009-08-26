@@ -63,8 +63,6 @@ public class Androcast {
 			final Androcast app = this;
 
 			SwingUtilities.invokeLater(new Runnable() {
-
-				@Override
 				public void run() {
 					JFrame f = new AndrocastFrame("Androcast", app);
 					f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -127,5 +125,9 @@ public class Androcast {
 
 	public Device[] getDevices() {
 		return devices;
+	}
+
+	public AndroidDebugBridge getBridge() {
+		return bridge;
 	}
 }

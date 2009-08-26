@@ -20,9 +20,14 @@ import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.text.MessageFormat;
 
 import javax.imageio.ImageIO;
@@ -37,6 +42,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.android.ddmlib.Device;
 
@@ -49,36 +55,34 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 
 	private final Androcast application;
 	private JToolBar tbPanel;
-	private JPanel screenPanel;
+	private CapturePanel screenPanel;
 	private JComboBox devCombo, zoomCombo;
 	private JToggleButton startButton;
 	private JButton captureButton;
 	private JCheckBox landscapeCheck;
 	private AndrocastMonitor worker;
-	private BufferedImage lastImage;
+	private JButton packButton;
 
 	public AndrocastFrame(String arg0, Androcast app) throws HeadlessException {
 		super(arg0);
 		application = app;
-		lastImage = null;
 		initComponents();
 	}
 
 	private void initComponents() {
 		tbPanel = new JToolBar();
-		tbPanel.setFloatable(false);
+		tbPanel.setFloatable(true);
+
 		tbPanel.add(new JLabel("Device: "));
 		devCombo = new JComboBox();
 		for (Device d : application.getDevices()) {
 			devCombo.addItem(getDeviceCaption(d));
 		}
 		tbPanel.add(devCombo);
-		tbPanel.addSeparator();
 
 		startButton = new JToggleButton("Start");
 		startButton.addItemListener(this);
 		tbPanel.add(startButton);
-		tbPanel.addSeparator();
 
 		captureButton = new JButton("Capture");
 		captureButton.setEnabled(false);
@@ -97,9 +101,17 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 		zoomCombo.addItemListener(this);
 		tbPanel.add(zoomCombo);
 
+		packButton = new JButton("Pack");
+		packButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pack();
+			}
+		});
+		tbPanel.add(packButton);
+		
 		add(tbPanel, BorderLayout.PAGE_START);
 
-		screenPanel = new CapturePanel();
+		screenPanel = new CapturePanel(this);
 		add(screenPanel, BorderLayout.CENTER);
 
 		setSize(400, 600);
@@ -114,22 +126,16 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 
 	class CaptureAction extends AbstractAction {
 		public void actionPerformed(ActionEvent e) {
-			if (worker == null)
-				throw new NullPointerException("Worker thread is not running");
-			BufferedImage image = worker.getImage();
+			BufferedImage image = screenPanel.getImage();
 			JFileChooser fc = new JFileChooser();
+			fc.addChoosableFileFilter(new FileNameExtensionFilter("PNG file", "png"));
 			if (fc.showSaveDialog(AndrocastFrame.this) == JFileChooser.APPROVE_OPTION) {
 				try {
 					ImageIO.write(image, "png", fc.getSelectedFile());
 				} catch (Exception ex) {
-					JOptionPane
-							.showMessageDialog(
-									AndrocastFrame.this,
-									MessageFormat
-											.format(
-													"Unable to save a capture: {0}\n{1}",
-													fc.getSelectedFile(), ex
-															.getMessage()),
+					JOptionPane.showMessageDialog(AndrocastFrame.this,
+									MessageFormat.format("Unable to save a capture: {0}\n{1}",
+													fc.getSelectedFile(), ex.getMessage()),
 									"Error saving capture",
 									JOptionPane.ERROR_MESSAGE);
 				}
@@ -156,9 +162,7 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 				for (Device d : devices) {
 					if (devCombo.getSelectedItem().equals(getDeviceCaption(d))) {
 						worker = new AndrocastMonitor(screenPanel, d);
-						worker
-								.setZoom(zoomValues[zoomCombo
-										.getSelectedIndex()]);
+						worker.setZoom(zoomValues[zoomCombo.getSelectedIndex()]);
 						worker.setLandscape(landscapeCheck.isSelected());
 						worker.execute();
 						break;
@@ -173,28 +177,8 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 				worker = null;
 				startButton.setText("Start");
 				devCombo.setEnabled(true);
-				captureButton.setEnabled(false);
 				break;
 			}
 		}
-	}
-
-	class CapturePanel extends JPanel {
-		CapturePanel() {
-			setSize(320, 240);
-			setOpaque(true);
-		}
-
-		@Override
-		protected void paintComponent(Graphics g) {
-			super.paintComponent(g);
-			if (worker != null) {
-				worker.render(g);
-			} else {
-				// TODO add offscreen bitmap and render it when worker is not
-				// running
-			}
-		}
-
 	}
 }

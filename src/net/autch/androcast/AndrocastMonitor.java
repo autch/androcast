@@ -17,19 +17,21 @@
 package net.autch.androcast;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.android.ddmlib.Device;
 import com.android.ddmlib.RawImage;
 
 public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
-	private final Component component;
-	private final Device device;
+	private final CapturePanel panel;
+	private final LiveCaptureChannel channel;
 	private boolean landscape;
 	private boolean resize;
 	private BufferedImage image;
@@ -38,11 +40,11 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	private int img_width, img_height; // w/h of rendered img
 	private double zoom;
 
-	AndrocastMonitor(Component cmp, Device dev) {
+	public AndrocastMonitor(CapturePanel cmp, Device dev) {
 		super();
 
-		device = dev;
-		component = cmp;
+		channel = new LiveCaptureChannel(dev);
+		panel = cmp;
 		landscape = false;
 		resize = true;
 		zoom = 1.0;
@@ -52,14 +54,16 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	protected Object doInBackground() {
 		RawImage rawImage;
 		try {
+			rawImage = channel.start();
+			if (rawImage == null) {
+				System.err.println("LiveCaptureChannel.start() returned null");
+				return null;
+			}
 			while (!isCancelled()) {
-				rawImage = device.getScreenshot();
-				// device/adb not available?
-				if (rawImage == null)
-					return null;
+				rawImage = channel.get();
 				assert rawImage.bpp == 16;
 
-				synchronized (this) {
+				synchronized(panel) {
 					if (resize) {
 						width = raw_width = rawImage.width;
 						height = raw_height = rawImage.height;
@@ -73,7 +77,12 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 						// reconstruct image buffer
 						image = new BufferedImage(raw_width, raw_height,
 								BufferedImage.TYPE_INT_ARGB);
-						component.setSize(img_width, img_height);
+
+						SwingUtilities.invokeAndWait(new Runnable() {
+							public void run() {
+								panel.setImage(image, img_width, img_height, raw_width, raw_height);
+							}
+						});
 						resize = false;
 					}
 					if (landscape) {
@@ -81,30 +90,38 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 					} else {
 						transformRawImageP(image, rawImage);
 					}
-					rawImage = null;
 				}
 				publish(true);
 
-				Thread.sleep(66); // 15.15fps
+				try {
+					Thread.sleep(1000 / 30); // 15.15fps
+				} catch (InterruptedException ie) {
+					// thru
+				}
 			}
-		} catch (InterruptedException ie) {
-			// thru
-			System.err.println("Sleep interrupted: " + ie.getMessage());
 		} catch (IOException ioe) {
-			System.err.println("Unable to get frame buffer: "
-					+ ioe.getMessage());
+			System.err.println("Unable to get frame buffer: " + ioe.getMessage());
+		} catch (Exception e) {
+			System.err.println("Uncaught exception: " + e);
+			e.printStackTrace();
+		} finally {
+			try {
+				if(channel != null)
+					channel.finish();
+			} catch (IOException e) {
+				System.err.println("Nudge failed " + e.getMessage());
+			}
 		}
 		return null; // return your result
 	}
 
 	@Override
 	protected synchronized void process(List<Boolean> b) {
-		component.repaint();
+		panel.repaint();
 	}
 
 	public synchronized void render(Graphics g) {
-		g.drawImage(image, 0, 0, img_width, img_height, 0, 0, raw_width,
-				raw_height, null);
+		g.drawImage(image, 0, 0, img_width, img_height, 0, 0, raw_width, raw_height, null);
 	}
 
 	private static void transformRawImageP(BufferedImage image,
