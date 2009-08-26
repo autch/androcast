@@ -32,7 +32,6 @@ import com.android.ddmlib.Device;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.Log;
 import com.android.ddmlib.RawImage;
-import com.android.ddmlib.Log.LogLevel;
 import com.android.ddmlib.log.LogReceiver;
 
 /**

@@ -16,9 +16,6 @@
 
 package net.autch.androcast;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
@@ -78,7 +75,7 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 						image = new BufferedImage(raw_width, raw_height,
 								BufferedImage.TYPE_INT_ARGB);
 
-						SwingUtilities.invokeAndWait(new Runnable() {
+						SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 								panel.setImage(image, img_width, img_height, raw_width, raw_height);
 							}
@@ -92,9 +89,11 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 					}
 				}
 				publish(true);
+				// direct rendering -- may violate multi-threaded Swing rule.
+				// panel.getGraphics().drawImage(image, 0, 0, img_width, img_height, 0, 0, raw_width, raw_height, null);
 
 				try {
-					Thread.sleep(1000 / 30); // 15.15fps
+					Thread.sleep(1000 / 15); // 15.15fps
 				} catch (InterruptedException ie) {
 					// thru
 				}
@@ -109,7 +108,7 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 				if(channel != null)
 					channel.finish();
 			} catch (IOException e) {
-				System.err.println("Nudge failed " + e.getMessage());
+				// ignore exception
 			}
 		}
 		return null; // return your result
@@ -118,10 +117,6 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	@Override
 	protected synchronized void process(List<Boolean> b) {
 		panel.repaint();
-	}
-
-	public synchronized void render(Graphics g) {
-		g.drawImage(image, 0, 0, img_width, img_height, 0, 0, raw_width, raw_height, null);
 	}
 
 	private static void transformRawImageP(BufferedImage image,
