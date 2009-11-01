@@ -38,7 +38,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.android.ddmlib.Device;
+import com.android.ddmlib.IDevice;
 
 public class AndrocastFrame extends JFrame implements ItemListener {
 
@@ -69,7 +69,7 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 
 		tbPanel.add(new JLabel("Device: "));
 		devCombo = new JComboBox();
-		for (Device d : application.getDevices()) {
+		for (IDevice d : application.getDevices()) {
 			devCombo.addItem(getDeviceCaption(d));
 		}
 		tbPanel.add(devCombo);
@@ -113,7 +113,7 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 		// pack();
 	}
 
-	public static String getDeviceCaption(Device dev) {
+	public static String getDeviceCaption(IDevice dev) {
 		String name = dev.isEmulator() ? "EMU: " : "DEV: ";
 		return name + dev.getSerialNumber();
 	}
@@ -152,8 +152,8 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 		if (source == startButton) {
 			switch (e.getStateChange()) {
 			case ItemEvent.SELECTED:
-				Device[] devices = application.getDevices();
-				for (Device d : devices) {
+				IDevice[] devices = application.getDevices();
+				for (IDevice d : devices) {
 					if (devCombo.getSelectedItem().equals(getDeviceCaption(d))) {
 						worker = new AndrocastMonitor(screenPanel, d);
 						worker.setZoom(zoomValues[zoomCombo.getSelectedIndex()]);

@@ -23,7 +23,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-import com.android.ddmlib.Device;
+import com.android.ddmlib.IDevice;
 import com.android.ddmlib.RawImage;
 
 public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
@@ -37,7 +37,7 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	private int img_width, img_height; // w/h of rendered img
 	private double zoom;
 
-	public AndrocastMonitor(CapturePanel cmp, Device dev) {
+	public AndrocastMonitor(CapturePanel cmp, IDevice dev) {
 		super();
 
 		channel = new LiveCaptureChannel(dev);

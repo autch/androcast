@@ -9,12 +9,12 @@ import java.nio.channels.SocketChannel;
 
 import net.autch.androcast.CustomAdbHelper.AdbResponse;
 
-import com.android.ddmlib.Device;
+import com.android.ddmlib.IDevice;
 import com.android.ddmlib.Log;
 import com.android.ddmlib.RawImage;
 
 public class LiveCaptureChannel {
-	private final Device device;
+	private final IDevice device;
 	private SocketChannel adbChan;
 	private RawImage rawImage;
 	private byte[] imageBytes;
@@ -24,7 +24,7 @@ public class LiveCaptureChannel {
     final static int ADB_PORT = 5037;
     private final static byte[] nudge = { 0 };
 
-	public LiveCaptureChannel(Device dev) {
+	public LiveCaptureChannel(IDevice dev) {
 		device = dev;
 	}
 	

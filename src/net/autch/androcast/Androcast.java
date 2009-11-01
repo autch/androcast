@@ -25,11 +25,11 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.android.ddmlib.AndroidDebugBridge;
-import com.android.ddmlib.Device;
+import com.android.ddmlib.IDevice;
 
 public class Androcast {
 	private AndroidDebugBridge bridge;
-	private Device[] devices;
+	private IDevice[] devices;
 
 	/**
 	 * @param args
@@ -113,7 +113,7 @@ public class Androcast {
 		return bridge;
 	}
 
-	public Device[] fetchDevices() throws Exception {
+	public IDevice[] fetchDevices() throws Exception {
 		// now get the devices
 		devices = bridge.getDevices();
 
@@ -123,7 +123,7 @@ public class Androcast {
 		return devices;
 	}
 
-	public Device[] getDevices() {
+	public IDevice[] getDevices() {
 		return devices;
 	}
 

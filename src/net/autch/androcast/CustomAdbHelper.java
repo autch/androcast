@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SocketChannel;
 
-import com.android.ddmlib.Device;
+import com.android.ddmlib.IDevice;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.Log;
 import com.android.ddmlib.RawImage;
@@ -84,7 +84,7 @@ class CustomAdbHelper {
      * @param devicePort the port we're opening
      */
     public static SocketChannel open(InetSocketAddress adbSockAddr,
-            Device device, int devicePort) throws IOException {
+            IDevice device, int devicePort) throws IOException {
 
         SocketChannel adbChan = SocketChannel.open(adbSockAddr);
         try {
@@ -124,7 +124,7 @@ class CustomAdbHelper {
      * @param pid the process pid to connect to.
      */
     public static SocketChannel createPassThroughConnection(InetSocketAddress adbSockAddr,
-            Device device, int pid) throws IOException {
+            IDevice device, int pid) throws IOException {
 
         SocketChannel adbChan = SocketChannel.open(adbSockAddr);
         try {
@@ -266,7 +266,7 @@ class CustomAdbHelper {
     /**
      * Retrieve the frame buffer from the device.
      */
-    public static RawImage getFrameBuffer(InetSocketAddress adbSockAddr, Device device)
+    public static RawImage getFrameBuffer(InetSocketAddress adbSockAddr, IDevice device)
             throws IOException {
 
         RawImage imageParams = new RawImage();
@@ -339,7 +339,7 @@ class CustomAdbHelper {
      * handed to "rcvr" as it arrives.
      */
     public static void executeRemoteCommand(InetSocketAddress adbSockAddr,
-            String command, Device device, IShellOutputReceiver rcvr)
+            String command, IDevice device, IShellOutputReceiver rcvr)
             throws IOException {
         Log.v("ddms", "execute: running " + command);
 
@@ -408,7 +408,7 @@ class CustomAdbHelper {
      * @param rcvr the {@link LogReceiver} to receive the log output
      * @throws IOException
      */
-    public static void runEventLogService(InetSocketAddress adbSockAddr, Device device,
+    public static void runEventLogService(InetSocketAddress adbSockAddr, IDevice device,
             LogReceiver rcvr) throws IOException {
         runLogService(adbSockAddr, device, "events", rcvr); //$NON-NLS-1$
     }
@@ -421,7 +421,7 @@ class CustomAdbHelper {
      * @param rcvr the {@link LogReceiver} to receive the log output
      * @throws IOException
      */
-    public static void runLogService(InetSocketAddress adbSockAddr, Device device, String logName,
+    public static void runLogService(InetSocketAddress adbSockAddr, IDevice device, String logName,
             LogReceiver rcvr) throws IOException {
         SocketChannel adbChan = null;
         
@@ -483,7 +483,7 @@ class CustomAdbHelper {
      * @return <code>true</code> if success.
      * @throws IOException 
      */
-    public static boolean createForward(InetSocketAddress adbSockAddr, Device device, int localPort,
+    public static boolean createForward(InetSocketAddress adbSockAddr, IDevice device, int localPort,
             int remotePort) throws IOException {
 
         SocketChannel adbChan = null;
@@ -521,7 +521,7 @@ class CustomAdbHelper {
      * @return <code>true</code> if success.
      * @throws IOException
      */
-    public static boolean removeForward(InetSocketAddress adbSockAddr, Device device, int localPort,
+    public static boolean removeForward(InetSocketAddress adbSockAddr, IDevice device, int localPort,
             int remotePort) throws IOException {
 
         SocketChannel adbChan = null;
@@ -700,7 +700,7 @@ class CustomAdbHelper {
      * @param device The device to talk to.
      * @throws IOException
      */
-    static void setDevice(SocketChannel adbChan, Device device)
+    static void setDevice(SocketChannel adbChan, IDevice device)
             throws IOException {
         // if the device is not -1, then we first tell adb we're looking to talk
         // to a specific device
