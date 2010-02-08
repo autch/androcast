@@ -23,9 +23,6 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-import com.android.ddmlib.IDevice;
-import com.android.ddmlib.RawImage;
-
 public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	private final CapturePanel panel;
 	private final LiveCaptureChannel channel;
@@ -37,10 +34,10 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	private int img_width, img_height; // w/h of rendered img
 	private double zoom;
 
-	public AndrocastMonitor(CapturePanel cmp, IDevice dev) {
+	public AndrocastMonitor(CapturePanel cmp, String device) {
 		super();
 
-		channel = new LiveCaptureChannel(dev);
+		channel = new LiveCaptureChannel(device);
 		panel = cmp;
 		landscape = false;
 		resize = true;
@@ -49,7 +46,7 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 
 	@Override
 	protected Object doInBackground() {
-		RawImage rawImage;
+		FrameBuffer rawImage;
 		try {
 			rawImage = channel.start();
 			if (rawImage == null) {
@@ -58,7 +55,6 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 			}
 			while (!isCancelled()) {
 				rawImage = channel.get();
-				assert rawImage.bpp == 16;
 
 				synchronized(panel) {
 					if (resize) {
@@ -82,18 +78,14 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 						});
 						resize = false;
 					}
-					if (landscape) {
-						transformRawImageL(image, rawImage);
-					} else {
-						transformRawImageP(image, rawImage);
-					}
+					rawImage.render(landscape, image);
 				}
 				publish(true);
 				// direct rendering -- may violate multi-threaded Swing rule.
 				// panel.getGraphics().drawImage(image, 0, 0, img_width, img_height, 0, 0, raw_width, raw_height, null);
 
 				try {
-					Thread.sleep(1000 / 15); // 15.15fps
+					Thread.sleep(1000 / 10); // 15.15fps
 				} catch (InterruptedException ie) {
 					// thru
 				}
@@ -117,50 +109,6 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 	@Override
 	protected synchronized void process(List<Boolean> b) {
 		panel.repaint();
-	}
-
-	private static void transformRawImageP(BufferedImage image,
-			RawImage rawImage) {
-		// convert raw data to an Image
-		byte[] buffer = rawImage.data;
-		int index = 0;
-		for (int y = 0; y < rawImage.height; y++) {
-			for (int x = 0; x < rawImage.width; x++) {
-
-				int value = buffer[index++] & 0x00FF;
-				value |= (buffer[index++] << 8) & 0x0FF00;
-
-				int r = ((value >> 11) & 0x01F) << 3;
-				int g = ((value >> 5) & 0x03F) << 2;
-				int b = ((value >> 0) & 0x01F) << 3;
-
-				value = 0xFF << 24 | r << 16 | g << 8 | b;
-
-				image.setRGB(x, y, value);
-			}
-		}
-	}
-
-	private static void transformRawImageL(BufferedImage image,
-			RawImage rawImage) {
-		// convert raw data to an Image
-		byte[] buffer = rawImage.data;
-		int index = 0;
-		for (int y = 0; y < rawImage.height; y++) {
-			for (int x = 0; x < rawImage.width; x++) {
-
-				int value = buffer[index++] & 0x00FF;
-				value |= (buffer[index++] << 8) & 0x0FF00;
-
-				int r = ((value >> 11) & 0x01F) << 3;
-				int g = ((value >> 5) & 0x03F) << 2;
-				int b = ((value >> 0) & 0x01F) << 3;
-
-				value = 0xFF << 24 | r << 16 | g << 8 | b;
-
-				image.setRGB(y, rawImage.width - x - 1, value);
-			}
-		}
 	}
 
 	public synchronized BufferedImage getImage() {

@@ -38,12 +38,11 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.android.ddmlib.IDevice;
-
 public class AndrocastFrame extends JFrame implements ItemListener {
+	private static final String RE_EMULATOR_SERIAL = "emulator-(\\d+)";
 
 	private static final String[] zoomLabels = { "50%", "75%", "100%", "150%",
-			"200%" };
+	"200%" };
 	private static final double[] zoomValues = { 0.5, 0.75, 1.0, 1.50, 2.0 };
 	private static final int zoomDefault = 2;
 
@@ -69,7 +68,7 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 
 		tbPanel.add(new JLabel("Device: "));
 		devCombo = new JComboBox();
-		for (IDevice d : application.getDevices()) {
+		for (String d : application.getDevices()) {
 			devCombo.addItem(getDeviceCaption(d));
 		}
 		tbPanel.add(devCombo);
@@ -102,7 +101,7 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 			}
 		});
 		tbPanel.add(packButton);
-		
+
 		add(tbPanel, BorderLayout.PAGE_START);
 
 		screenPanel = new CapturePanel(this);
@@ -113,9 +112,13 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 		// pack();
 	}
 
-	public static String getDeviceCaption(IDevice dev) {
-		String name = dev.isEmulator() ? "EMU: " : "DEV: ";
-		return name + dev.getSerialNumber();
+	public static String getDeviceCaption(String dev) {
+		String name = isEmulator(dev) ? "EMU: " : "DEV: ";
+		return name + dev;
+	}
+
+	private static boolean isEmulator(String serial) {
+		return serial.matches(RE_EMULATOR_SERIAL);
 	}
 
 	class CaptureAction extends AbstractAction {
@@ -128,8 +131,8 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 					ImageIO.write(image, "png", fc.getSelectedFile());
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(AndrocastFrame.this,
-									MessageFormat.format("Unable to save a capture: {0}\n{1}",
-													fc.getSelectedFile(), ex.getMessage()),
+							MessageFormat.format("Unable to save a capture: {0}\n{1}",
+									fc.getSelectedFile(), ex.getMessage()),
 									"Error saving capture",
 									JOptionPane.ERROR_MESSAGE);
 				}
@@ -152,8 +155,8 @@ public class AndrocastFrame extends JFrame implements ItemListener {
 		if (source == startButton) {
 			switch (e.getStateChange()) {
 			case ItemEvent.SELECTED:
-				IDevice[] devices = application.getDevices();
-				for (IDevice d : devices) {
+				String[] devices = application.getDevices();
+				for (String d : devices) {
 					if (devCombo.getSelectedItem().equals(getDeviceCaption(d))) {
 						worker = new AndrocastMonitor(screenPanel, d);
 						worker.setZoom(zoomValues[zoomCombo.getSelectedIndex()]);
