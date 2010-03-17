@@ -55,6 +55,10 @@ public class Androcast {
 		try {
 			adbChan.open();
 			devices = adbChan.getDevices();
+			if(devices.length == 0) {
+				JOptionPane.showMessageDialog(null, "No devices detected!", "Androcast", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 
 			final Androcast app = this;
 

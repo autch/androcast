@@ -321,6 +321,10 @@ public class AdbChannel {
 		if (!resp.okay)
 			throw new IOException("devices request rejected: " + resp.message);
 
+		if(resp.message.length() == 0) {
+			throw new IOException("no devices detected");
+		}
+
 		String[] devStr = resp.message.split("\n");
 		String[] devices = new String[devStr.length];
 		int i = 0;
