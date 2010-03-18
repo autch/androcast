@@ -307,6 +307,7 @@ public class AdbChannel {
 	public void close() throws IOException
 	{
 		adbChan.close();
+		adbChan = null;
 	}
 
 	String[] getDevices() throws IOException

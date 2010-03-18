@@ -46,9 +46,13 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 
 	@Override
 	protected Object doInBackground() {
+		int wait_per_frame;
+
 		FrameBuffer rawImage;
 		try {
 			rawImage = channel.start();
+			wait_per_frame = 1000 / channel.getPreferedFramerate();
+
 			if (rawImage == null) {
 				System.err.println("LiveCaptureChannel.start() returned null");
 				return null;
@@ -85,7 +89,7 @@ public class AndrocastMonitor extends SwingWorker<Object, Boolean> {
 				// panel.getGraphics().drawImage(image, 0, 0, img_width, img_height, 0, 0, raw_width, raw_height, null);
 
 				try {
-					Thread.sleep(1000 / 10); // 15.15fps
+					Thread.sleep(wait_per_frame); // 15.15fps
 				} catch (InterruptedException ie) {
 					// thru
 				}
