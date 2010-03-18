@@ -4,7 +4,7 @@ Androcast
 
 Swing で書かれた、Android 用スクリーンモニタです。
 
-Android cupcake の、
+Android ソースツリーの、
 development/tools/screenshot/src/com/android/screenshot/Screenshot.java
 からのパクリです（ぉ
 
@@ -15,9 +15,10 @@ Linux で画面モニタをしたくて自分で使うために作ったので�
 機能
 ----
 ・デバイスもしくはエミュレータを選択してモニタ開始
-・ポートレイト／ランドスケープ切り替え
+・ポートレート／ランドスケープ切り替え
 ・PNG 形式でのキャプチャ
 ・50% 〜 200% のズーム
+・ツールバーを切り離す
 
 
 必要なもの
@@ -26,9 +27,8 @@ Linux で画面モニタをしたくて自分で使うために作ったので�
 ・JRE6（javax.swing.SwingWorker を使っています）
 ・Android SDK 1.5r2 以降
 
-実行には Android SDK に入っている tools/lib/ddmlib.jar が必要です。この
-ファイルを SDK からコピーして、androcast.jar と同じディレクトリにおいて
-ください。
+今回のバージョンから ddmlib.jar には依存しなくなりました。
+androcast.jar だけで動きます。
 
 adb へのパスを通しておきます。もしくは VM のオプションで、
   -Dcom.android.screenshot.bindir=/path/to/tools/adb
@@ -71,17 +71,22 @@ Zoom プルダウンでは画面モニタの大きさを 50%, 75%, 100%, 150%, 2
 
 （たぶん）Swing の書き方が古い。
 
+nudge による連続フレーム取得がなくなってしまったので、Android 2.x デバ
+イスへの負担がものすごい。
+
 
 ライセンス
 ----------
 
 Copyright (C) 2008 The Android Open Source Project
-Copyright (c) 2009 Autch.net
+Copyright (c) 2009-2010 Autch.net
 
 Androcast は Apache ライセンス 2.0 で配布されます。
 このプログラムは、Android ソースツリーの以下のファイルを元にしています。
 
 development/tools/screenshot/src/com/android/screenshot/Screenshot.java
+sdk/ddms/lib/ddmlib/src/com/android/ddmlib/ 以下の多数のファイル
+system/core/adb/framebuffer_service.c
 
 Apache License 2.0 の全文は LICENSE-2.0.txt をご覧ください。
 
