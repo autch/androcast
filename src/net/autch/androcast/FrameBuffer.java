@@ -123,7 +123,7 @@ public class FrameBuffer {
 		return getMask(b_length, b_offset);
 	}
 
-	private static final int getPelPart(int v, int l, int o) {
+	private static int getPelPart(int v, int l, int o) {
 		return ((v >>> o) & ((1 << l) - 1)) << (8-l); 
 	}
 
@@ -143,6 +143,8 @@ public class FrameBuffer {
 
 				int value = buffer[index++] & 0x00FF;
 				value |= (buffer[index++] << 8) & 0x0FF00;
+				if(bpp >= 24) value |= (buffer[index++] << 16) & 0x00FF0000;
+				if(bpp == 32) value |= (buffer[index++] << 24) & 0xFF000000;
 
 				int r = getPelPart(value, r_length, r_offset);
 				int g = getPelPart(value, g_length, g_offset);
