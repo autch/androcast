@@ -27,8 +27,7 @@ Linux で画面モニタをしたくて自分で使うために作ったので�
 ・JRE6（javax.swing.SwingWorker を使っています）
 ・Android SDK 1.5r2 以降
 
-今回のバージョンから ddmlib.jar には依存しなくなりました。
-androcast.jar だけで動きます。
+r13 から ddmlib.jar には依存しなくなりました。androcast.jar だけで動きます。
 
 adb へのパスを通しておきます。もしくは VM のオプションで、
   -Dcom.android.screenshot.bindir=/path/to/tools/adb
